@@ -15,6 +15,10 @@ mkisofs, install [homebrew](http://mxcl.github.com/homebrew/), then:
 
     brew install cdrtools
 
+    brew tap homebrew/dupes
+
+    brew install homebrew/dupes/libarchive 
+
 ### Ben's notes
 
 Forked Carl's repo, and it sort of worked out of the box. Tweaked 

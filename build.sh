@@ -57,7 +57,7 @@ echo "Creating Custom ISO"
 if [ ! -e "${FOLDER_ISO}/custom.iso" ]; then
 
   echo "Untarring downloaded ISO ..."
-  tar -C "${FOLDER_ISO_CUSTOM}" -xf "${ISO_FILENAME}"
+  /usr/local/bin/bsdtar -C "${FOLDER_ISO_CUSTOM}" -xf "${ISO_FILENAME}"
 
   # backup initrd.gz
   echo "Backing up current init.rd ..."
@@ -141,7 +141,7 @@ if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
 
   VBoxManage createhd \
     --filename "${FOLDER_VBOX}/${BOX}/${BOX}.vdi" \
-    --size 40960
+    --size 10140
 
   VBoxManage storageattach "${BOX}" \
     --storagectl "SATA Controller" \
@@ -158,48 +158,10 @@ if ! VBoxManage showvminfo "${BOX}" >/dev/null 2>/dev/null; then
     echo -n "."
   done
   echo ""
-
-  # Forward SSH
-  VBoxManage modifyvm "${BOX}" \
-    --natpf1 "guestssh,tcp,,2222,,22"
-
-  # Attach guest additions iso
-  VBoxManage storageattach "${BOX}" \
-    --storagectl "IDE Controller" \
-    --port 1 \
-    --device 0 \
-    --type dvddrive \
-    --medium "${ISO_GUESTADDITIONS}"
-
-  VBoxManage startvm "${BOX}"
-
-  # get private key
-  curl --output "${FOLDER_BUILD}/id_rsa" "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"
-  chmod 600 "${FOLDER_BUILD}/id_rsa"
-
-  # install virtualbox guest additions
-  ssh -i "${FOLDER_BUILD}/id_rsa" -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 2222 vagrant@127.0.0.1 "sudo mount /dev/cdrom /media/cdrom; sudo sh /media/cdrom/VBoxLinuxAdditions.run; sudo umount /media/cdrom; sudo shutdown -h now"
-  echo -n "Waiting for machine to shut off "
-  while VBoxManage list runningvms | grep "${BOX}" >/dev/null; do
-    sleep 20
-    echo -n "."
-  done
-  echo ""
-
-  VBoxManage modifyvm "${BOX}" --natpf1 delete "guestssh"
-
-  # Detach guest additions iso
-  echo "Detach guest additions ..."
-  VBoxManage storageattach "${BOX}" \
-    --storagectl "IDE Controller" \
-    --port 1 \
-    --device 0 \
-    --type dvddrive \
-    --medium emptydrive
 fi
 
 echo "Building Vagrant Box ..."
-vagrant package --base "${BOX}"
+vagrant package --base "${BOX}" --output "${BOX}.box"
 
 # references:
 # http://blog.ericwhite.ca/articles/2009/11/unattended-debian-lenny-install/

@@ -3,7 +3,7 @@ Vagrant::Config.run do |config|
   config.vm.box = "ubuntu-precise-64"
 
   # Enable the Puppet provisioner
-  config.vm.provision :puppet
+  #config.vm.provision :puppet
 
   # Enable and configure the chef solo provisioner
   config.vm.provision :chef_solo do |chef|
